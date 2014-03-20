@@ -9,7 +9,7 @@
 #+#DATE
 # version 2014-03-19
 #
-#+#DETAILS
+#+#DETAIL
 # This is a distributed TODO list. dido depends on environment variable $DIDO which should
 # point to a file that can hold a list of paths/filenames. 
 #
@@ -17,6 +17,8 @@
 # a little bit of formatting. If invoked with an argument, dido will either create a file
 # 'TODO' in the local directory, add this file to the database held in $DIDO and add the
 # arguments to the file 'TODO.' If 'TODO' exists, the argument will just be appended.
+# If an environment variable $TODO is defined and if it points to an existing file, its
+# contents will be shown as 'Global Todo' at the beginning of the distributed todo list. 
 #
 # For the listing of the contents it's useful to know, that dido will ignore all lines 
 # in the TODO files that begin with `#' which allows commenting these items for archival 
@@ -32,6 +34,10 @@
 # 2014-03-xx, rngrp: First version.
 # 2011-03-19, rngrp: added documentation  
 
+if (! $?DIDO ) then
+	echo 'ERROR: environment variable $DIDO must be defined and point to a file.'
+	exit
+endif
 
 if ($#argv == 0) then
 	clear
@@ -39,11 +45,14 @@ if ($#argv == 0) then
 	echo "Distributed TODO list"
 	echo "---------------------"
 	echo " "
-	echo "Global TODO:"
-        echo "---------------------"
-	grep -v "^#" $TODO | grep -v '[$-]' | cat -n
-	echo " "
-	echo " "
+
+	if ($?TODO && -e $TODO) then
+		echo "Global TODO:"
+        	echo "---------------------"
+		grep -v "^#" $TODO | grep -v '[$-]' | cat -n
+		echo " "
+		echo " "
+	endif
 
 	foreach f (`cat $DIDO | grep -v "#" `) 
 	    if (-e $f) then
